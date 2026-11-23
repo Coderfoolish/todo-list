@@ -11,6 +11,6 @@ Chạy từ thư mục gốc trong PowerShell.
 | Chạy Android Lint | `.\gradlew.bat :app:lintDebug` |
 | Chạy instrumentation tests | `.\gradlew.bat :app:connectedDebugAndroidTest` |
 
-Unit tests nằm trong `app/src/test`. Instrumentation tests nằm trong `app/src/androidTest`, dùng `AndroidJUnitRunner` và cần emulator hoặc thiết bị Android đã kết nối. Hai bộ kiểm thử hiện chứa các bài kiểm thử mẫu.
+Unit tests nằm trong `app/src/test`. Instrumentation tests nằm trong `app/src/androidTest`, dùng `AndroidJUnitRunner` và cần emulator hoặc thiết bị Android đã kết nối.
 
-APK debug được tạo trong `app/build/outputs/apk/debug/`. Để xem giao diện hiện tại trong Android Studio, dùng `GreetingPreview` trong [MainActivity.kt](../app/src/main/java/com/example/todo_list/MainActivity.kt).
+APK debug được tạo trong `app/build/outputs/apk/debug/`. Chạy cấu hình `app` trên emulator hoặc thiết bị để mở màn hình danh sách và kiểm tra luồng thêm, sửa công việc.

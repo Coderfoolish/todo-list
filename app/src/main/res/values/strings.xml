@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">todo-list</string>
+    <string name="task_list_title">Công việc</string>
+    <string name="task_add">Thêm</string>
+    <string name="task_add_title">Thêm công việc</string>
+    <string name="task_edit_title">Sửa công việc</string>
+    <string name="task_title">Tiêu đề</string>
+    <string name="task_description">Mô tả (không bắt buộc)</string>
+    <string name="task_save">Lưu</string>
+    <string name="task_saving">Đang lưu…</string>
+    <string name="task_saved">Đã lưu</string>
+    <string name="task_cancel">Hủy</string>
+    <string name="task_retry">Thử lại</string>
+    <string name="task_delete">Xóa</string>
+    <string name="task_delete_title">Xóa công việc?</string>
+    <string name="task_delete_confirmation">Bạn muốn xóa “%1$s”?</string>
+    <string name="task_delete_label">Xóa %1$s</string>
+    <string name="task_completion_label">Trạng thái hoàn thành của %1$s</string>
+    <string name="tasks_loading">Đang tải danh sách…</string>
+    <string name="tasks_empty">Chưa có công việc nào.</string>
+    <string name="tasks_load_error">Không tải được danh sách công việc.</string>
+    <string name="task_loading">Đang tải công việc…</string>
+    <string name="task_load_error">Không tải được công việc này.</string>
+    <string name="task_missing">Công việc này không còn tồn tại.</string>
+    <string name="task_title_required">Hãy nhập tiêu đề công việc.</string>
+    <string name="task_save_error">Không lưu được công việc. Hãy thử lại.</string>
+    <string name="task_status_error">Không đổi được trạng thái công việc. Hãy thử lại.</string>
+    <string name="task_delete_error">Không xóa được công việc. Hãy thử lại.</string>
 </resources>
