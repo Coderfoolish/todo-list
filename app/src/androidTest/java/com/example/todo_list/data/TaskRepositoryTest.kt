@@ -12,6 +12,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.time.Duration.Companion.milliseconds
 
 @RunWith(AndroidJUnit4::class)
 class TaskRepositoryTest {
@@ -20,7 +21,7 @@ class TaskRepositoryTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val database = Room.inMemoryDatabaseBuilder(context, TaskDatabase::class.java).build()
         try {
-            withTimeout(5_000) {
+            withTimeout(5_000.milliseconds) {
                 val repository = TaskRepository(database.taskDao())
                 val id = repository.addTask("  Mua sách  ")
                 assertEquals(Task(id, "Mua sách"), repository.observeTasks().first().single())

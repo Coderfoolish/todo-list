@@ -2,6 +2,8 @@
     <string name="app_name">todo-list</string>
     <string name="task_list_title">Công việc</string>
     <string name="task_add">Thêm</string>
+    <string name="task_progress_title">Tiến độ</string>
+    <string name="task_progress_count">%1$d/%2$d đã hoàn thành</string>
     <string name="task_add_title">Thêm công việc</string>
     <string name="task_edit_title">Sửa công việc</string>
     <string name="task_title">Tiêu đề</string>

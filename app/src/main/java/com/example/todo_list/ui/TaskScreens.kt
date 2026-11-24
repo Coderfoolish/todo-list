@@ -10,26 +10,34 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,17 +45,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todo_list.R
 import com.example.todo_list.data.Task
+import com.example.todo_list.ui.theme.TodolistTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,42 +78,64 @@ internal fun TaskListScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.task_list_title)) },
-                actions = {
-                    FilledTonalButton(onClick = onAdd, modifier = Modifier.padding(end = 12.dp)) {
-                        Text(stringResource(R.string.task_add))
-                    }
-                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onAdd,
+                icon = { Icon(painterResource(R.drawable.ic_task_add), contentDescription = null) },
+                text = { Text(stringResource(R.string.task_add)) },
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            if (state.isUpdating) LinearProgressIndicator(Modifier.fillMaxWidth())
-            state.actionError?.let { TaskError(it, Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+        Box(
+            Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            Column(Modifier.widthIn(max = 640.dp).fillMaxSize()) {
+                if (state.isUpdating) LinearProgressIndicator(Modifier.fillMaxWidth())
+                state.actionError?.let {
+                    TaskErrorBanner(it, Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+                }
 
-            when (val content = state.content) {
-                TaskListContent.Loading -> TaskProgress(R.string.tasks_loading, Modifier.weight(1f))
-                TaskListContent.Empty -> TaskMessage(R.string.tasks_empty, Modifier.weight(1f))
-                TaskListContent.LoadError -> TaskMessage(
-                    message = R.string.tasks_load_error,
-                    modifier = Modifier.weight(1f),
-                    onRetry = onRetry,
-                )
-                is TaskListContent.Tasks -> LazyColumn(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(content.items, key = { it.id }) { task ->
-                        TaskRow(
-                            task = task,
-                            actionsEnabled = !state.isUpdating,
-                            onEdit = { onEdit(task.id) },
-                            onCompletedChange = { onCompletedChange(task.id, it) },
-                            onDelete = { taskToDeleteId = task.id },
-                        )
+                when (val content = state.content) {
+                    TaskListContent.Loading -> TaskProgress(R.string.tasks_loading, Modifier.weight(1f))
+                    TaskListContent.Empty -> TaskMessage(R.string.tasks_empty, Modifier.weight(1f))
+                    TaskListContent.LoadError -> TaskMessage(
+                        message = R.string.tasks_load_error,
+                        modifier = Modifier.weight(1f),
+                        onRetry = onRetry,
+                    )
+                    is TaskListContent.Tasks -> {
+                        val completed = content.items.count { it.isCompleted }
+                        LazyColumn(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            contentPadding = PaddingValues(
+                                start = 20.dp,
+                                top = 8.dp,
+                                end = 20.dp,
+                                bottom = 88.dp,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            item { TaskSummary(completed, content.items.size) }
+                            items(content.items, key = { it.id }) { task ->
+                                TaskRow(
+                                    task = task,
+                                    actionsEnabled = !state.isUpdating,
+                                    onEdit = { onEdit(task.id) },
+                                    onCompletedChange = { onCompletedChange(task.id, it) },
+                                    onDelete = { taskToDeleteId = task.id },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -119,12 +153,44 @@ internal fun TaskListScreen(
                         taskToDeleteId = null
                         onDelete(taskToDelete.id)
                     },
-                ) { Text(stringResource(R.string.task_delete)) }
+                ) {
+                    Text(stringResource(R.string.task_delete), color = MaterialTheme.colorScheme.error)
+                }
             },
             dismissButton = {
                 TextButton(onClick = { taskToDeleteId = null }) { Text(stringResource(R.string.task_cancel)) }
             },
         )
+    }
+}
+
+@Composable
+private fun TaskSummary(completed: Int, total: Int) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.task_progress_title),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Text(
+                text = stringResource(R.string.task_progress_count, completed, total),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            LinearProgressIndicator(
+                progress = { completed.toFloat() / total },
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.18f),
+            )
+        }
     }
 }
 
@@ -138,9 +204,19 @@ private fun TaskRow(
 ) {
     val completionLabel = stringResource(R.string.task_completion_label, task.title)
     val deleteLabel = stringResource(R.string.task_delete_label, task.title)
-    Card(Modifier.fillMaxWidth()) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = if (task.isCompleted) {
+                MaterialTheme.colorScheme.surfaceContainer
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
+        ),
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Checkbox(
@@ -149,10 +225,21 @@ private fun TaskRow(
                 enabled = actionsEnabled,
                 modifier = Modifier.semantics { contentDescription = completionLabel },
             )
-            Column(Modifier.weight(1f).clickable(onClick = onEdit).padding(vertical = 12.dp)) {
+            Column(
+                modifier = Modifier.weight(1f).clickable(
+                    onClickLabel = stringResource(R.string.task_edit_title),
+                    onClick = onEdit,
+                ).heightIn(min = 48.dp).padding(vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+            ) {
                 Text(
                     text = task.title,
                     style = MaterialTheme.typography.titleMedium,
+                    color = if (task.isCompleted) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
                     textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
                 )
                 if (task.description.isNotBlank()) {
@@ -165,11 +252,9 @@ private fun TaskRow(
                     )
                 }
             }
-            TextButton(
-                onClick = onDelete,
-                enabled = actionsEnabled,
-                modifier = Modifier.semantics { contentDescription = deleteLabel },
-            ) { Text(stringResource(R.string.task_delete)) }
+            IconButton(onClick = onDelete, enabled = actionsEnabled) {
+                Icon(painterResource(R.drawable.ic_task_delete), contentDescription = deleteLabel)
+            }
         }
     }
 }
@@ -189,9 +274,13 @@ internal fun TaskFormScreen(
     val heading = if (isEditing) R.string.task_edit_title else R.string.task_add_title
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(heading)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
                 actions = {
                     TextButton(onClick = onBack, enabled = !state.blocksBack) {
                         Text(stringResource(R.string.task_cancel))
@@ -208,35 +297,45 @@ internal fun TaskFormScreen(
                 modifier = content,
                 onRetry = onRetry.takeIf { state.canRetry },
             )
-            is TaskFormUiState.Editing -> Column(
-                modifier = content.verticalScroll(rememberScrollState()).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                OutlinedTextField(
-                    value = state.title,
-                    onValueChange = onTitleChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !state.isSaving,
-                    label = { Text(stringResource(R.string.task_title)) },
-                    singleLine = true,
-                    isError = state.hasTitleError,
-                    supportingText = if (state.hasTitleError) {
-                        { TaskError(R.string.task_title_required) }
-                    } else null,
-                )
-                OutlinedTextField(
-                    value = state.description,
-                    onValueChange = onDescriptionChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !state.isSaving,
-                    label = { Text(stringResource(R.string.task_description)) },
-                    minLines = 3,
-                )
-                state.saveError?.let { TaskError(it) }
-                Button(onClick = onSave, enabled = !state.isSaving, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(if (state.isSaving) R.string.task_saving else R.string.task_save))
+            is TaskFormUiState.Editing -> Box(content, contentAlignment = Alignment.TopCenter) {
+                Column(
+                    modifier = Modifier.widthIn(max = 560.dp).fillMaxSize()
+                        .verticalScroll(rememberScrollState()).padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    OutlinedTextField(
+                        value = state.title,
+                        onValueChange = onTitleChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !state.isSaving,
+                        label = { Text(stringResource(R.string.task_title)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        shape = MaterialTheme.shapes.medium,
+                        isError = state.hasTitleError,
+                        supportingText = if (state.hasTitleError) {
+                            { TaskError(R.string.task_title_required) }
+                        } else null,
+                    )
+                    OutlinedTextField(
+                        value = state.description,
+                        onValueChange = onDescriptionChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !state.isSaving,
+                        label = { Text(stringResource(R.string.task_description)) },
+                        minLines = 4,
+                        shape = MaterialTheme.shapes.medium,
+                    )
+                    state.saveError?.let { TaskErrorBanner(it) }
+                    Button(
+                        onClick = onSave,
+                        enabled = !state.isSaving,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                    ) {
+                        Text(stringResource(if (state.isSaving) R.string.task_saving else R.string.task_save))
+                    }
+                    if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
                 }
-                if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
             }
             TaskFormUiState.Saved -> TaskProgress(R.string.task_saved, content)
         }
@@ -250,6 +349,22 @@ private fun TaskError(@StringRes message: Int, modifier: Modifier = Modifier) {
         color = MaterialTheme.colorScheme.error,
         modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
+}
+
+@Composable
+private fun TaskErrorBanner(@StringRes message: Int, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+    ) {
+        Text(
+            text = stringResource(message),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(16.dp).semantics { liveRegion = LiveRegionMode.Polite },
+        )
+    }
 }
 
 @Composable
@@ -276,10 +391,54 @@ private fun TaskMessage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(message), textAlign = TextAlign.Center)
+            Text(
+                text = stringResource(message),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
             if (onRetry != null) {
                 Button(onClick = onRetry) { Text(stringResource(R.string.task_retry)) }
             }
         }
+    }
+}
+
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 720)
+@Composable
+private fun TaskListPreview() {
+    TodolistTheme {
+        TaskListScreen(
+            state = TaskListUiState(
+                content = TaskListContent.Tasks(
+                    listOf(
+                        Task(3, "Chuẩn bị bài thuyết trình", "Hoàn tất nội dung trước thứ Sáu"),
+                        Task(2, "Lên lịch khám răng"),
+                        Task(1, "Đọc chương 3", isCompleted = true),
+                    ),
+                ),
+            ),
+            onAdd = {},
+            onEdit = {},
+            onRetry = {},
+            onCompletedChange = { _, _ -> },
+            onDelete = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 720)
+@Composable
+private fun TaskFormPreview() {
+    TodolistTheme {
+        TaskFormScreen(
+            state = TaskFormUiState.Editing(title = "Chuẩn bị bài thuyết trình", description = ""),
+            isEditing = true,
+            onTitleChange = {},
+            onDescriptionChange = {},
+            onSave = {},
+            onRetry = {},
+            onBack = {},
+        )
     }
 }

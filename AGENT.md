@@ -1,6 +1,6 @@
 # Hướng dẫn làm việc với todo-list
 
-Dự án Android có một module `:app`, viết bằng Kotlin và Jetpack Compose Material 3. Màn hình hiện tại hiển thị lời chào mẫu. Khi triển khai tính năng, đối chiếu với mã nguồn để xác định phần nào đã có.
+Dự án Android có một module `:app`, viết bằng Kotlin và Jetpack Compose Material 3. Ứng dụng có hai màn hình Compose cho danh sách và biểu mẫu thêm/sửa công việc. Khi triển khai tính năng, đối chiếu với mã nguồn để xác định phần nào đã có.
 
 - [Cấu trúc và luồng giao diện](docs/architecture.md)
 - [Thư viện và phiên bản](docs/libraries.md)
